@@ -45,7 +45,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{o
 <section class="panel section-panel" id="history"><div class="section-title">Move history</div><div class="moves" id="moves">No moves yet.</div><div class="note" id="opening"></div></section>
 <section class="panel section-panel" id="reviewTab"><div class="section-title">Game analysis</div><div id="review" class="note">Finish a game to see its result and review.</div><button class="inline-action" id="analyzeBtn" style="margin-top:12px">Analyze current position</button></section>
 <section class="panel section-panel" id="statsTab"><div class="section-title">Your statistics</div><div id="stats" class="note">Games: 0 · Wins: 0 · Draws: 0 · Losses: 0</div></section>
-<p class="note" style="text-align:center;margin:18px 12px">Chess Companion <span style="color:var(--gold)">v3.1</span> · Think ahead. Enjoy the game.</p>
+<p class="note" style="text-align:center;margin:18px 12px">Chess Companion <span style="color:var(--gold)">v3.2</span> · Think ahead. Enjoy the game.</p>
 </main>
 <div class="overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
  <div class="sheet"><div class="sheet-head"><div><div class="eyebrow">Personalize your game</div><div class="sheet-title">Settings</div></div><button class="close-btn" id="settingsClose" aria-label="Close settings">×</button></div>
@@ -106,7 +106,7 @@ $("undoBtn").onclick=()=>{if(busy||!history.length)return;game.undo();history.po
 function openingName(){const p=history.slice(0,6).map(m=>m.san).join(" ");const names=[["e4 e5 Nf3 Nc6 Bc4","Italian Game"],["e4 e5 Nf3 Nc6 Bb5","Ruy Lopez"],["d4 d5 c4","Queen's Gambit"],["e4 c5","Sicilian Defense"],["e4 e6","French Defense"],["e4 c6","Caro-Kann Defense"],["d4 Nf6 c4 g6","King's Indian Defense"],["Nf3 d5 g3","Réti Opening"]];const hit=names.find(([seq])=>p.startsWith(seq));return hit?hit[1]:history.length<2?"Starting position":"Unclassified opening";}
 function stats(){try{return JSON.parse(localStorage.getItem("ccStats")||'{"games":0,"wins":0,"draws":0,"losses":0}') }catch(e){return {games:0,wins:0,draws:0,losses:0}}}
 function showStats(){const s=stats();$("stats").textContent="Games: "+s.games+" · Wins: "+s.wins+" · Draws: "+s.draws+" · Losses: "+s.losses;}
-function finishGame(){reviewed=true;const won=game.isCheckmate()?(game.turn()!==$("color").value):false,draw=!game.isCheckmate();if($("mode").value==="computer"){const s=stats();s.games++;if(draw)s.draws++;else if(won)s.wins++;else s.losses++;localStorage.setItem("ccStats",JSON.stringify(s));
+function finishGame(){reviewed=true;const won=game.isCheckmate()?(game.turn()!==$("color").value):false,draw=!game.isCheckmate();if($("mode").value==="computer"){const s=stats();s.games++;if(draw)s.draws++;else if(won)s.wins++;else s.losses++;localStorage.setItem("ccStats",JSON.stringify(s));showStats()}$("review").textContent=resultText()+" Played "+history.length+" half-moves. Opening: "+openingName()+". Use Analyze current position to inspect material balance."}
 function openOverlay(id){$(id).classList.add("open")}
 function closeOverlay(id){$(id).classList.remove("open")}
 $("settingsBtn").onclick=()=>openOverlay("settingsOverlay");
@@ -119,7 +119,6 @@ $("menuSave").onclick=()=>{closeOverlay("menuOverlay");saveGame()};
 $("menuResume").onclick=()=>{closeOverlay("menuOverlay");resumeGame()};
 ["settingsOverlay","menuOverlay"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target===$(id))closeOverlay(id)}));
 document.querySelectorAll(".nav-btn").forEach(btn=>btn.onclick=()=>{document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x===btn));document.querySelectorAll(".section-panel").forEach(x=>x.classList.remove("active"));const target=btn.dataset.tab;if(target!=="play")$(target).classList.add("active")});
-showStats();}$("review").textContent=resultText()+" Played "+history.length+" half-moves. Opening: "+openingName()+". Use Analyze current position to inspect material balance.";}
 function saveGame(){try{localStorage.setItem("ccSaved",JSON.stringify({pgn:game.pgn(),mode:$("mode").value,color:$("color").value,level:$("level").value}));$("hint").textContent="Game saved on this device."}catch(e){$("hint").textContent="Could not save this game on this device."}}
 function resumeGame(){try{const d=JSON.parse(localStorage.getItem("ccSaved")||"null");if(!d){$("hint").textContent="No saved game found.";return}game=new Chess();if(d.pgn)game.loadPgn(d.pgn);history=game.history({verbose:true});$("mode").value=d.mode||"computer";$("color").value=d.color||"w";$("level").value=d.level||"medium";selected=null;legal=[];reviewed=false;$("hint").textContent="Saved game restored.";render();if(!game.isGameOver()&&$("mode").value==="computer"&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="Saved game could not be restored: "+e.message}}
 function showThreats(){const side=game.turn(),enemy=side==="w"?"b":"w",pieces=[];for(const rank of "12345678")for(const file of "abcdefgh"){const sq=file+rank,p=game.get(sq);if(p&&p.color===enemy&&p.type!=="k"&&game.isAttacked(sq,side))pieces.push(sq+" ("+p.type.toUpperCase()+")")}$("threats").textContent=pieces.length?"Your "+(side==="w"?"White":"Black")+" pieces are attacking: "+pieces.join(", "):"No direct attacks on opposing pieces are visible."}
@@ -129,6 +128,6 @@ $("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStora
 try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
 showStats();
 render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=15",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=16",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

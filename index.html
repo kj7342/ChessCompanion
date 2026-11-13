@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest"><title>Chess Companion</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#172235;--line:#304158;--gold:#edc477;--muted:#aab7c9}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);background:radial-gradient(ellipse at top,#233750,#0b1220 68%);color:#f5f6f8;font:16px system-ui,-apple-system,sans-serif}
+main{max-width:650px;margin:auto;padding:16px 0 30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.brand{font-size:24px;font-weight:850;letter-spacing:-.8px}.brand span{color:var(--gold)}.muted{color:var(--muted);font-size:12px}
+.panel{background:linear-gradient(145deg,#1b2a40,#131d2d);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 12px 32px #0004}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);margin:0 0 6px 3px;font-weight:700}
+select,button{font:inherit;border-radius:12px;border:1px solid #3b4d65;background:#24344b;color:#fff;padding:11px 12px}select{width:100%}button{font-weight:650;cursor:pointer}button:disabled{opacity:.4}.primary{background:var(--gold);border-color:var(--gold);color:#18202b}.row{display:flex;gap:8px;flex-wrap:wrap}.row button{flex:1;min-width:80px}
+.status{font-weight:750;margin-bottom:10px}.status small{display:block;color:var(--muted);font-weight:400;margin-top:3px}
+.board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border:4px solid #26364b;border-radius:10px;overflow:hidden;box-shadow:0 12px 35px #0007;touch-action:manipulation}
+.square{border:0;border-radius:0;padding:0;position:relative;display:grid;place-items:center;aspect-ratio:1;font-size:clamp(28px,8.3vw,55px);line-height:1}
+.square.light{background:#e8d8b8}.square.dark{background:#78906f}.square.selected{box-shadow:inset 0 0 0 4px #ffd36f}.square.target:after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#175c3c99}.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #175c3c99;border-radius:50%}
+.piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}
+.hint{color:#f5d28e;min-height:22px;font-size:14px;line-height:1.45;margin-top:9px}.moves{max-height:130px;overflow:auto;font-size:13px;line-height:1.9;color:#dce5f0}.moves b{color:var(--gold);margin-right:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}
+</style></head><body><main>
+<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v1.0</div></header>
+<section class="panel"><div class="controls">
+<div class="field"><label for="level">COMPUTER LEVEL</label><select id="level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select></div>
+<div class="field"><label for="color">PLAY AS</label><select id="color"><option value="w">White</option><option value="b">Black</option></select></div>
+</div></section>
+<section class="panel"><div class="status" id="status">Your move — White<small id="substatus">Tap a piece, then tap a highlighted square.</small></div>
+<div id="board" class="board" aria-label="Chess board"></div><div class="hint" id="hint" aria-live="polite"></div>
+<div class="row" style="margin-top:12px"><button class="primary" id="hintBtn">💡 Get a hint</button><button id="undoBtn">↶ Undo</button><button id="newBtn">＋ New game</button></div></section>
+<section class="panel"><b>Move history</b><div class="moves" id="moves">No moves yet.</div></section>
+<p class="note">Choose a difficulty, play as White or Black, and request a hint whenever you need one. Expert searches deeper and may take longer on older phones. The first load requires an internet connection for the chess rules library.</p>
+</main>
+<script type="module">
+import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
+(()=>{
+const $=id=>document.getElementById(id),glyph={wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟"},files="abcdefgh";
+const levels={easy:{depth:1,random:.42},medium:{depth:2,random:.12},hard:{depth:3,random:.025},expert:{depth:4,random:0}},value={p:100,n:315,b:330,r:500,q:900,k:20000};
+let game=new Chess(),selected=null,legal=[],history=[],busy=false;
+function myTurn(){return game.turn()===$("color").value}
+function render(){
+ const board=$("board");board.innerHTML="";const flip=$("color").value==="b";
+ for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+  const rr=flip?7-r:r,ff=flip?7-f:f,sq=files[ff]+(8-rr),p=game.get(sq),el=document.createElement("button");
+  el.className="square "+((rr+ff)%2?"dark":"light")+(selected===sq?" selected":"");el.setAttribute("aria-label",sq+(p?" "+p.color+" "+p.type:""));
+  if(p){const span=document.createElement("span");span.className="piece "+(p.color==="w"?"white":"black");span.textContent=glyph[p.color+p.type];el.appendChild(span)}
+  if(legal.some(m=>m.to===sq))el.classList.add(p?"capture":"target");el.onclick=()=>tap(sq);board.appendChild(el);
+ }
+ $("moves").innerHTML=history.length?history.map((m,i)=>(i%2===0?"<b>"+(Math.floor(i/2)+1)+".</b>":"")+m.san+(i%2?"<br>":" ")).join(""):"No moves yet.";
+ $("undoBtn").disabled=!history.length||busy;
+ const over=game.isGameOver();$("status").innerHTML=over?resultText():busy?"Computer is thinking…":myTurn()?"Your move — "+(game.turn()==="w"?"White":"Black"):"Computer to move<small>Hang tight…</small>";
+ $("substatus").textContent=game.isCheck()?"Check!":"Tap a piece, then tap a highlighted square.";
+}
+function resultText(){if(game.isCheckmate())return "Checkmate — "+(game.turn()==="w"?"Black":"White")+" wins.";if(game.isStalemate())return "Draw — stalemate.";if(game.isThreefoldRepetition())return "Draw — threefold repetition.";if(game.isInsufficientMaterial())return "Draw — insufficient material.";return "Draw — game over."}
+function tap(sq){if(busy||game.isGameOver()||!myTurn())return;const p=game.get(sq);
+ if(selected&&legal.some(m=>m.to===sq)){const opts=legal.filter(m=>m.to===sq),m=opts.find(x=>x.promotion==="q")||opts[0];makeMove(m);return}
+ if(p&&p.color===game.turn()){selected=sq;legal=game.moves({square:sq,verbose:true})}else{selected=null;legal=[]}$("hint").textContent="";render()}
+function makeMove(m){try{const played=game.move({from:m.from,to:m.to,promotion:m.promotion||"q"});if(played)history.push(played);selected=null;legal=[];$("hint").textContent="";render();if(!game.isGameOver()&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="That move is not legal."}}
+function evaluate(g){let score=0;const b=g.board();for(let r=0;r<8;r++)for(let f=0;f<8;f++){const p=b[r][f];if(!p)continue;let v=value[p.type],advance=p.color==="w"?6-r:r-1;if(p.type==="p")v+=advance*7+(f>1&&f<6?8:0);if(p.type==="n"||p.type==="b")v+=(3.5-Math.abs(3.5-f))*5+(3.5-Math.abs(3.5-r))*5;if(p.type==="q")v+=(3.5-Math.abs(3.5-f))*2;score+=(p.color==="w"?1:-1)*v}return score}
+function ordered(g){return g.moves({verbose:true}).sort((a,b)=>{const v=m=>(m.captured?value[m.captured]*10:0)+(m.promotion?value[m.promotion]:0)+(m.san.includes("+")?40:0);return v(b)-v(a)})}
+function search(g,d,a,b,ply){if(d===0||g.isGameOver())return evaluate(g)+(g.isCheckmate()?(g.turn()==="w"?-100000+ply:100000-ply):0);const moves=ordered(g);if(g.turn()==="w"){let best=-Infinity;for(const m of moves){g.move(m);best=Math.max(best,search(g,d-1,a,b,ply+1));g.undo();a=Math.max(a,best);if(b<=a)break}return best}else{let best=Infinity;for(const m of moves){g.move(m);best=Math.min(best,search(g,d-1,a,b,ply+1));g.undo();b=Math.min(b,best);if(b<=a)break}return best}}
+function bestMove(depth){const moves=ordered(game);let best=game.turn()==="w"?-Infinity:Infinity,candidates=[];for(const m of moves){game.move(m);const score=search(game,depth-1,-Infinity,Infinity,0);game.undo();if(game.turn()==="w"?score>best:score<best){best=score;candidates=[m]}else if(Math.abs(score-best)<.01)candidates.push(m)}return candidates[Math.floor(Math.random()*candidates.length)]||null}
+function computerMove(){if(game.isGameOver()||myTurn())return;busy=true;render();setTimeout(()=>{const cfg=levels[$("level").value],moves=ordered(game);let m;if(Math.random()<cfg.random)m=moves[Math.floor(Math.random()*moves.length)];else m=bestMove(cfg.depth);busy=false;if(m)makeMove(m);else render()},35)}
+function hint(){if(busy||game.isGameOver()||!myTurn())return;$("hint").textContent="Finding a helpful move…";setTimeout(()=>{const m=bestMove(Math.min(3,levels[$("level").value].depth+1));if(!m)return;selected=m.from;legal=game.moves({square:selected,verbose:true});let why=m.san.includes("x")?"It captures an opposing piece.":m.san.includes("+")?"It gives check.":m.san.startsWith("O-")?"It castles your king to safety.":"It is the strongest candidate found in this position."; $("hint").textContent="Suggested move: "+m.san+" ("+m.from+" → "+m.to+"). "+why;render()},30)}
+function newGame(){game=new Chess();history=[];selected=null;legal=[];busy=false;$("hint").textContent="";render();if($("color").value==="b")setTimeout(computerMove,120)}
+$("hintBtn").onclick=hint;$("newBtn").onclick=newGame;$("color").onchange=newGame;$("level").onchange=()=>{$("hint").textContent="Computer level: "+$("level").selectedOptions[0].text};
+$("undoBtn").onclick=()=>{if(busy||!history.length)return;game.undo();history.pop();if(history.length&&game.turn()!==$("color").value){game.undo();history.pop()}selected=null;legal=[];$("hint").textContent="";render()};
+render();if($("color").value==="b")setTimeout(computerMove,120);
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
+})();
+</script></body></html>

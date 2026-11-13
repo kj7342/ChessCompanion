@@ -15,17 +15,26 @@ select,button{font:inherit;border-radius:12px;border:1px solid #3b4d65;backgroun
 .square{border:0;border-radius:0;padding:0;position:relative;display:grid;place-items:center;aspect-ratio:1;font-size:clamp(28px,8.3vw,55px);line-height:1}
 .square.light{background:#e8d8b8}.square.dark{background:#78906f}.square.selected{box-shadow:inset 0 0 0 4px #ffd36f}.square.target:after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#175c3c99}.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #175c3c99;border-radius:50%}
 .piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}
+body[data-theme="wood"] .square.light{background:#e8c99a}body[data-theme="wood"] .square.dark{background:#875a36}
+body[data-theme="midnight"] .square.light{background:#9ba9bb}body[data-theme="midnight"] .square.dark{background:#45556d}
+
 .hint{color:#f5d28e;min-height:22px;font-size:14px;line-height:1.45;margin-top:9px}.moves{max-height:130px;overflow:auto;font-size:13px;line-height:1.9;color:#dce5f0}.moves b{color:var(--gold);margin-right:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}
 </style></head><body><main>
-<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v1.5</div></header>
+<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v2.0</div></header>
 <section class="panel"><div class="controls">
 <div class="field"><label for="level">COMPUTER LEVEL</label><select id="level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select></div>
 <div class="field"><label for="color">PLAY AS</label><select id="color"><option value="w">White</option><option value="b">Black</option></select></div>
+<div class="field"><label for="mode">GAME MODE</label><select id="mode"><option value="computer">Vs Computer</option><option value="local">Two Players</option></select></div>
+<div class="field"><label for="theme">BOARD STYLE</label><select id="theme"><option value="classic">Classic</option><option value="wood">Walnut</option><option value="midnight">Midnight</option></select></div>
 </div></section>
 <section class="panel"><div class="status" id="status">Your move — White</div><div class="note" id="substatus">Tap a piece, then tap a highlighted square.</div>
 <div id="board" class="board" aria-label="Chess board"></div><div class="hint" id="hint" aria-live="polite"></div>
-<div class="row" style="margin-top:12px"><button class="primary" id="hintBtn">💡 Get a hint</button><button id="undoBtn">↶ Undo</button><button id="newBtn">＋ New game</button></div></section>
-<section class="panel"><b>Move history</b><div class="moves" id="moves">No moves yet.</div></section>
+<div class="row" style="margin-top:12px"><button class="primary" id="hintBtn">💡 Get a hint</button><button id="undoBtn">↶ Undo</button><button id="newBtn">＋ New game</button></div>
+<div class="row" style="margin-top:8px"><button id="saveBtn">Save game</button><button id="resumeBtn">Resume saved</button><button id="threatBtn">Show threats</button></div>
+<div id="threats" class="hint"></div></section>
+<section class="panel"><b>Move history</b><div class="moves" id="moves">No moves yet.</div><div class="note" id="opening"></div></section>
+<section class="panel"><b>Game review</b><div id="review" class="note">Finish a game to see its result and review.</div><div class="row" style="margin-top:8px"><button id="analyzeBtn">Analyze current position</button></div></section>
+<section class="panel"><b>Your stats</b><div id="stats" class="note">Games: 0 · Wins: 0 · Draws: 0 · Losses: 0</div></section>
 <p class="note">Choose a difficulty, play as White or Black, and request a hint whenever you need one. Expert searches deeper and may take longer on older phones. The first load requires an internet connection for the chess rules library.</p>
 </main>
 <script type="module">
@@ -33,8 +42,8 @@ import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/ches
 (()=>{
 const $=id=>document.getElementById(id),glyph={wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟"},files="abcdefgh";
 const levels={easy:{depth:1,random:.42,ms:250},medium:{depth:2,random:.12,ms:450},hard:{depth:4,random:.025,ms:850},expert:{depth:6,random:0,ms:1200}},value={p:100,n:315,b:330,r:500,q:900,k:20000};
-let game=new Chess(),selected=null,legal=[],history=[],busy=false,searchNodes=0,searchDeadline=0;
-function myTurn(){return game.turn()===$("color").value}
+let game=new Chess(),selected=null,legal=[],history=[],busy=false,searchNodes=0,searchDeadline=0,reviewed=false;
+function myTurn(){return $("mode").value==="local"||game.turn()===$("color").value}
 function render(){
  const board=$("board");board.innerHTML="";const flip=$("color").value==="b";
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
@@ -45,24 +54,38 @@ function render(){
  }
  $("moves").innerHTML=history.length?history.map((m,i)=>(i%2===0?"<b>"+(Math.floor(i/2)+1)+".</b>":"")+m.san+(i%2?"<br>":" ")).join(""):"No moves yet.";
  $("undoBtn").disabled=!history.length||busy;
- const over=game.isGameOver();$("status").textContent=over?resultText():busy?"Computer is thinking…":myTurn()?"Your move — "+(game.turn()==="w"?"White":"Black"):"Computer to move";
+ const over=game.isGameOver();$("status").textContent=over?resultText():busy?"Computer is thinking…":$("mode").value==="local"?(game.turn()==="w"?"White":"Black")+" to move":myTurn()?"Your move — "+(game.turn()==="w"?"White":"Black"):"Computer to move";
+ $("opening").textContent="Opening: "+openingName();if(over&&!reviewed)finishGame();
  $("substatus").textContent=game.isCheck()?"Check!":busy?"Hang tight…":"Tap a piece, then tap a highlighted square.";
 }
 function resultText(){if(game.isCheckmate())return "Checkmate — "+(game.turn()==="w"?"Black":"White")+" wins.";if(game.isStalemate())return "Draw — stalemate.";if(game.isThreefoldRepetition())return "Draw — threefold repetition.";if(game.isInsufficientMaterial())return "Draw — insufficient material.";return "Draw — game over."}
 function tap(sq){if(busy||game.isGameOver()||!myTurn())return;const p=game.get(sq);
  if(selected&&legal.some(m=>m.to===sq)){const opts=legal.filter(m=>m.to===sq),m=opts.find(x=>x.promotion==="q")||opts[0];makeMove(m);return}
  if(p&&p.color===game.turn()){selected=sq;legal=game.moves({square:sq,verbose:true})}else{selected=null;legal=[]}$("hint").textContent="";render()}
-function makeMove(m){try{const played=game.move({from:m.from,to:m.to,...(m.promotion?{promotion:m.promotion}:{})});if(!played)throw new Error("Chess library rejected move");history.push(played);selected=null;legal=[];$("hint").textContent="";render();if(!game.isGameOver()&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="Move error: "+(e&&e.message?e.message:String(e));render()}}
+function makeMove(m){try{const played=game.move({from:m.from,to:m.to,...(m.promotion?{promotion:m.promotion}:{})});if(!played)throw new Error("Chess library rejected move");history.push(played);selected=null;legal=[];$("hint").textContent="";render();if(!game.isGameOver()&&$("mode").value==="computer"&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="Move error: "+(e&&e.message?e.message:String(e));render()}}
 function evaluate(g){let score=0;const b=g.board();for(let r=0;r<8;r++)for(let f=0;f<8;f++){const p=b[r][f];if(!p)continue;let v=value[p.type],advance=p.color==="w"?6-r:r-1;if(p.type==="p")v+=advance*7+(f>1&&f<6?8:0);if(p.type==="n"||p.type==="b")v+=(3.5-Math.abs(3.5-f))*5+(3.5-Math.abs(3.5-r))*5;if(p.type==="q")v+=(3.5-Math.abs(3.5-f))*2;score+=(p.color==="w"?1:-1)*v}return score}
 function ordered(g){return g.moves({verbose:true}).sort((a,b)=>{const v=m=>(m.captured?value[m.captured]*10:0)+(m.promotion?value[m.promotion]:0)+(m.san.includes("+")?40:0);return v(b)-v(a)})}
 function search(g,d,a,b,ply){if((++searchNodes&127)===0&&performance.now()>searchDeadline)throw new Error("search-timeout");if(d===0||g.isGameOver())return evaluate(g)+(g.isCheckmate()?(g.turn()==="w"?-100000+ply:100000-ply):0);const moves=ordered(g);if(g.turn()==="w"){let best=-Infinity;for(const m of moves){g.move(m);best=Math.max(best,search(g,d-1,a,b,ply+1));g.undo();a=Math.max(a,best);if(b<=a)break}return best}else{let best=Infinity;for(const m of moves){g.move(m);best=Math.min(best,search(g,d-1,a,b,ply+1));g.undo();b=Math.min(b,best);if(b<=a)break}return best}}
 function bestMove(maxDepth,budget){const rootFen=game.fen(),moves=game.moves({verbose:true});if(!moves.length)return null;let chosen={from:moves[0].from,to:moves[0].to,promotion:moves[0].promotion};searchDeadline=performance.now()+budget;searchNodes=0;for(let depth=1;depth<=maxDepth;depth++){let best=game.turn()==="w"?-Infinity:Infinity,candidates=[];try{for(const m of moves){const probe=new Chess(rootFen);probe.move({from:m.from,to:m.to,promotion:m.promotion||"q"});const score=search(probe,depth-1,-Infinity,Infinity,0);if(game.turn()==="w"?score>best:score<best){best=score;candidates=[m]}else if(Math.abs(score-best)<.01)candidates.push(m)}if(candidates.length){const pick=candidates[Math.floor(Math.random()*candidates.length)];chosen={from:pick.from,to:pick.to,promotion:pick.promotion}}}catch(e){break}}return chosen}
 function computerMove(){if(game.isGameOver()||myTurn()||busy)return;busy=true;render();setTimeout(()=>{let m=null;try{const cfg=levels[$("level").value],moves=ordered(game);if(moves.length){m=Math.random()<cfg.random?moves[Math.floor(Math.random()*moves.length)]:bestMove(cfg.depth,cfg.ms)}}catch(err){try{while(game.history().length>history.length)game.undo()}catch(cleanupError){}m=null}finally{busy=false}const legalNow=game.moves({verbose:true});const safe=m&&legalNow.find(x=>x.from===m.from&&x.to===m.to&&(x.promotion||"")===(m.promotion||""));const fallback=safe||legalNow[0]||null;if(fallback)makeMove(fallback);else render()},25)}
 function hint(){if(busy||game.isGameOver()||!myTurn())return;$("hint").textContent="Finding a helpful move…";setTimeout(()=>{const cfg=levels[$("level").value],m=bestMove(Math.min(3,cfg.depth+1),Math.min(600,cfg.ms));if(!m)return;selected=m.from;legal=game.moves({square:selected,verbose:true});let why=m.san.includes("x")?"It captures an opposing piece.":m.san.includes("+")?"It gives check.":m.san.startsWith("O-")?"It castles your king to safety.":"It is the strongest candidate found in this position."; $("hint").textContent="Suggested move: "+m.san+" ("+m.from+" → "+m.to+"). "+why;render()},30)}
-function newGame(){game=new Chess();history=[];selected=null;legal=[];busy=false;$("hint").textContent="";render();if($("color").value==="b")setTimeout(computerMove,120)}
-$("hintBtn").onclick=hint;$("newBtn").onclick=newGame;$("color").onchange=newGame;$("level").onchange=()=>{$("hint").textContent="Computer level: "+$("level").selectedOptions[0].text};
+function newGame(){game=new Chess();history=[];selected=null;legal=[];busy=false;reviewed=false;$("hint").textContent="";$("threats").textContent="";$("review").textContent="Finish a game to see its result and review.";render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120)}
+$("hintBtn").onclick=hint;$("newBtn").onclick=newGame;$("color").onchange=newGame;$("mode").onchange=newGame;$("level").onchange=()=>{$("hint").textContent="Computer level: "+$("level").selectedOptions[0].text};
 $("undoBtn").onclick=()=>{if(busy||!history.length)return;game.undo();history.pop();if(history.length&&game.turn()!==$("color").value){game.undo();history.pop()}selected=null;legal=[];$("hint").textContent="";render()};
-render();if($("color").value==="b")setTimeout(computerMove,120);
+
+function openingName(){const p=history.slice(0,6).map(m=>m.san).join(" ");const names=[["e4 e5 Nf3 Nc6 Bc4","Italian Game"],["e4 e5 Nf3 Nc6 Bb5","Ruy Lopez"],["d4 d5 c4","Queen's Gambit"],["e4 c5","Sicilian Defense"],["e4 e6","French Defense"],["e4 c6","Caro-Kann Defense"],["d4 Nf6 c4 g6","King's Indian Defense"],["Nf3 d5 g3","Réti Opening"]];const hit=names.find(([seq])=>p.startsWith(seq));return hit?hit[1]:history.length<2?"Starting position":"Unclassified opening";}
+function stats(){try{return JSON.parse(localStorage.getItem("ccStats")||'{"games":0,"wins":0,"draws":0,"losses":0}') }catch(e){return {games:0,wins:0,draws:0,losses:0}}}
+function showStats(){const s=stats();$("stats").textContent="Games: "+s.games+" · Wins: "+s.wins+" · Draws: "+s.draws+" · Losses: "+s.losses;}
+function finishGame(){reviewed=true;const won=game.isCheckmate()?(game.turn()!==$("color").value):false,draw=!game.isCheckmate();if($("mode").value==="computer"){const s=stats();s.games++;if(draw)s.draws++;else if(won)s.wins++;else s.losses++;localStorage.setItem("ccStats",JSON.stringify(s));showStats();}$("review").textContent=resultText()+" Played "+history.length+" half-moves. Opening: "+openingName()+". Use Analyze current position to inspect material balance.";}
+function saveGame(){try{localStorage.setItem("ccSaved",JSON.stringify({pgn:game.pgn(),mode:$("mode").value,color:$("color").value,level:$("level").value}));$("hint").textContent="Game saved on this device."}catch(e){$("hint").textContent="Could not save this game on this device."}}
+function resumeGame(){try{const d=JSON.parse(localStorage.getItem("ccSaved")||"null");if(!d){$("hint").textContent="No saved game found.";return}game=new Chess();if(d.pgn)game.loadPgn(d.pgn);history=game.history({verbose:true});$("mode").value=d.mode||"computer";$("color").value=d.color||"w";$("level").value=d.level||"medium";selected=null;legal=[];reviewed=false;$("hint").textContent="Saved game restored.";render();if(!game.isGameOver()&&$("mode").value==="computer"&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="Saved game could not be restored: "+e.message}}
+function showThreats(){const side=game.turn(),enemy=side==="w"?"b":"w",pieces=[];for(const rank of "12345678")for(const file of "abcdefgh"){const sq=file+rank,p=game.get(sq);if(p&&p.color===enemy&&p.type!=="k"&&game.isAttacked(sq,side))pieces.push(sq+" ("+p.type.toUpperCase()+")")}$("threats").textContent=pieces.length?"Your "+(side==="w"?"White":"Black")+" pieces are attacking: "+pieces.join(", "):"No direct attacks on opposing pieces are visible."}
+function analyzePosition(){const b=game.board();let w=0,bl=0;for(const row of b)for(const p of row)if(p){(p.color==="w"?w+=value[p.type]:bl+=value[p.type])}const diff=w-bl;$("review").textContent="Material: White "+(w/100).toFixed(1)+" · Black "+(bl/100).toFixed(1)+". "+(diff===0?"Material is equal.":diff>0?"White is ahead by "+(diff/100).toFixed(1)+" points.":"Black is ahead by "+(-diff/100).toFixed(1)+" points.")+" This is a material snapshot, not a full engine evaluation."}
+$("saveBtn").onclick=saveGame;$("resumeBtn").onclick=resumeGame;$("threatBtn").onclick=showThreats;$("analyzeBtn").onclick=analyzePosition;
+$("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStorage.setItem("ccTheme",$("theme").value)};
+try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
+showStats();
+\nrender();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
 })();
 </script></body></html>

@@ -71,7 +71,7 @@ function computerMove(){if(game.isGameOver()||myTurn()||busy)return;busy=true;re
 function hint(){if(busy||game.isGameOver()||!myTurn())return;$("hint").textContent="Finding a helpful move…";setTimeout(()=>{const cfg=levels[$("level").value],m=bestMove(Math.min(3,cfg.depth+1),Math.min(600,cfg.ms));if(!m)return;selected=m.from;legal=game.moves({square:selected,verbose:true});let why=m.san.includes("x")?"It captures an opposing piece.":m.san.includes("+")?"It gives check.":m.san.startsWith("O-")?"It castles your king to safety.":"It is the strongest candidate found in this position."; $("hint").textContent="Suggested move: "+m.san+" ("+m.from+" → "+m.to+"). "+why;render()},30)}
 function newGame(){game=new Chess();history=[];selected=null;legal=[];busy=false;reviewed=false;$("hint").textContent="";$("threats").textContent="";$("review").textContent="Finish a game to see its result and review.";render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120)}
 $("hintBtn").onclick=hint;$("newBtn").onclick=newGame;$("color").onchange=newGame;$("mode").onchange=newGame;$("level").onchange=()=>{$("hint").textContent="Computer level: "+$("level").selectedOptions[0].text};
-$("undoBtn").onclick=()=>{if(busy||!history.length)return;game.undo();history.pop();if(history.length&&game.turn()!==$("color").value){game.undo();history.pop()}selected=null;legal=[];$("hint").textContent="";render()};
+$("undoBtn").onclick=()=>{if(busy||!history.length)return;game.undo();history.pop();if($("mode").value==="computer"&&history.length&&game.turn()!==$("color").value){game.undo();history.pop()}selected=null;legal=[];reviewed=false;$("hint").textContent="";render()};
 
 function openingName(){const p=history.slice(0,6).map(m=>m.san).join(" ");const names=[["e4 e5 Nf3 Nc6 Bc4","Italian Game"],["e4 e5 Nf3 Nc6 Bb5","Ruy Lopez"],["d4 d5 c4","Queen's Gambit"],["e4 c5","Sicilian Defense"],["e4 e6","French Defense"],["e4 c6","Caro-Kann Defense"],["d4 Nf6 c4 g6","King's Indian Defense"],["Nf3 d5 g3","Réti Opening"]];const hit=names.find(([seq])=>p.startsWith(seq));return hit?hit[1]:history.length<2?"Starting position":"Unclassified opening";}
 function stats(){try{return JSON.parse(localStorage.getItem("ccStats")||'{"games":0,"wins":0,"draws":0,"losses":0}') }catch(e){return {games:0,wins:0,draws:0,losses:0}}}
@@ -85,7 +85,7 @@ $("saveBtn").onclick=saveGame;$("resumeBtn").onclick=resumeGame;$("threatBtn").o
 $("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStorage.setItem("ccTheme",$("theme").value)};
 try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
 showStats();
-\nrender();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
+render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
 })();
 </script></body></html>

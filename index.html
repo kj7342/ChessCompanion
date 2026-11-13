@@ -20,7 +20,7 @@ body[data-theme="midnight"] .square.light{background:#9ba9bb}body[data-theme="mi
 
 .hint{color:#f5d28e;min-height:22px;font-size:14px;line-height:1.45;margin-top:9px}.moves{max-height:130px;overflow:auto;font-size:13px;line-height:1.9;color:#dce5f0}.moves b{color:var(--gold);margin-right:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}
 </style></head><body><main>
-<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v2.2</div></header>
+<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v2.3</div></header>
 <section class="panel"><div class="controls">
 <div class="field"><label for="level">COMPUTER LEVEL</label><select id="level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select></div>
 <div class="field"><label for="color">PLAY AS</label><select id="color"><option value="w">White</option><option value="b">Black</option></select></div>
@@ -49,7 +49,7 @@ function render(){
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
   const rr=flip?7-r:r,ff=flip?7-f:f,sq=files[ff]+(8-rr),p=game.get(sq),el=document.createElement("button");
   el.className="square "+((rr+ff)%2?"dark":"light")+(selected===sq?" selected":"");el.setAttribute("aria-label",sq+(p?" "+p.color+" "+p.type:""));
-  if(p){const span=document.createElement("span");span.className="piece "+(p.color==="w"?"white":"black")+(p.type==="p"?" pawn":"");span.textContent=glyph[p.color+p.type];el.appendChild(span)}
+  if(p){const span=document.createElement("span");span.className="piece "+(p.color==="w"?"white":"black")+(p.type==="p"?" pawn":"");if(p.type==="p"){const fill=p.color==="w"?"#fffdf4":"#202630",stroke=p.color==="w"?"#202630":"#fff9";span.innerHTML=`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:1em;height:1em;display:block;overflow:visible"><path d="M32 5c-8 0-14 6-14 14 0 6 3 10 8 13l-4 12c-1 4-5 7-10 9v5h40v-5c-5-2-9-5-10-9l-4-12c5-3 8-7 8-13C46 11 40 5 32 5z" fill="${fill}" stroke="${stroke}" stroke-width="2.5" stroke-linejoin="round"/><path d="M12 58h40" stroke="${stroke}" stroke-width="3" stroke-linecap="round"/></svg>`}else{span.textContent=glyph[p.color+p.type]}el.appendChild(span)}
   if(legal.some(m=>m.to===sq))el.classList.add(p?"capture":"target");el.onclick=()=>tap(sq);board.appendChild(el);
  }
  $("moves").innerHTML=history.length?history.map((m,i)=>(i%2===0?"<b>"+(Math.floor(i/2)+1)+".</b>":"")+m.san+(i%2?"<br>":" ")).join(""):"No moves yet.";
@@ -86,6 +86,6 @@ $("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStora
 try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
 showStats();
 render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=12",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=13",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

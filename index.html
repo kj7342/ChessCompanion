@@ -86,6 +86,6 @@ $("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStora
 try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
 showStats();
 render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=9",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

@@ -86,7 +86,8 @@ import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/ches
 (()=>{
 const $=id=>document.getElementById(id),glyph={wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"\u265F\uFE0E",bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"\u265F\uFE0E"},files="abcdefgh";
 const levels={easy:{depth:1,random:.42,ms:250},medium:{depth:2,random:.12,ms:450},hard:{depth:4,random:.025,ms:850},expert:{depth:6,random:0,ms:1200}},value={p:100,n:315,b:330,r:500,q:900,k:20000};
-let game=new Chess(),selected=null,legal=[],history=[],busy=false,searchNodes=0,searchDeadline=0,reviewed=false;\nlet currentGame="chess",checkers={board:[],turn:"w",forced:null,over:false,winner:null},checkersHistory=[],checkersUndo=[];
+let game=new Chess(),selected=null,legal=[],history=[],busy=false,searchNodes=0,searchDeadline=0,reviewed=false;
+let currentGame="chess",checkers={board:[],turn:"w",forced:null,over:false,winner:null},checkersHistory=[],checkersUndo=[];
 const defaults={captured:false,highlight:false,clock:false,analysis:false,sound:false,motion:false,visual:false};
 let options={...defaults},clockSeconds={w:300,b:300},clockTimer=null,lastClockAt=0,moveEvalBefore=null;
 function myTurn(){return $("mode").value==="local"||(currentGame==="checkers"?checkers.turn:game.turn())===$("color").value}
@@ -162,7 +163,9 @@ $("settingsBtn").onclick=()=>openOverlay("settingsOverlay");
 $("menuBtn").onclick=()=>openOverlay("menuOverlay");
 $("settingsClose").onclick=()=>closeOverlay("settingsOverlay");
 $("menuClose").onclick=()=>closeOverlay("menuOverlay");
-$("menuSettings").onclick=()=>{closeOverlay("menuOverlay");openOverlay("settingsOverlay")};\n$("menuChess").onclick=()=>{closeOverlay("menuOverlay");currentGame="chess";newGame();$("hint").textContent="Chess mode selected."};\n$("menuCheckers").onclick=()=>{closeOverlay("menuOverlay");currentGame="checkers";newGame();$("hint").textContent="Checkers mode selected."};
+$("menuSettings").onclick=()=>{closeOverlay("menuOverlay");openOverlay("settingsOverlay")};
+$("menuChess").onclick=()=>{closeOverlay("menuOverlay");currentGame="chess";newGame();$("hint").textContent="Chess mode selected."};
+$("menuCheckers").onclick=()=>{closeOverlay("menuOverlay");currentGame="checkers";newGame();$("hint").textContent="Checkers mode selected."};
 $("menuNew").onclick=()=>{closeOverlay("menuOverlay");newGame()};
 $("menuSave").onclick=()=>{closeOverlay("menuOverlay");saveGame()};
 $("menuResume").onclick=()=>{closeOverlay("menuOverlay");resumeGame()};

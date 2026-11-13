@@ -4,39 +4,69 @@
 <meta name="theme-color" content="#101827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="./manifest.webmanifest"><title>Chess Companion</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1220;--panel:#172235;--line:#304158;--gold:#edc477;--muted:#aab7c9}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);background:radial-gradient(ellipse at top,#233750,#0b1220 68%);color:#f5f6f8;font:16px system-ui,-apple-system,sans-serif}
-main{max-width:650px;margin:auto;padding:16px 0 30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.brand{font-size:24px;font-weight:850;letter-spacing:-.8px}.brand span{color:var(--gold)}.muted{color:var(--muted);font-size:12px}
-.panel{background:linear-gradient(145deg,#1b2a40,#131d2d);border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 12px 32px #0004}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);margin:0 0 6px 3px;font-weight:700}
-select,button{font:inherit;border-radius:12px;border:1px solid #3b4d65;background:#24344b;color:#fff;padding:11px 12px}select{width:100%}button{font-weight:650;cursor:pointer}button:disabled{opacity:.4}.primary{background:var(--gold);border-color:var(--gold);color:#18202b}.row{display:flex;gap:8px;flex-wrap:wrap}.row button{flex:1;min-width:80px}
-.status{font-weight:750;margin-bottom:10px}.status small{display:block;color:var(--muted);font-weight:400;margin-top:3px}
-.board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border:4px solid #26364b;border-radius:10px;overflow:hidden;box-shadow:0 12px 35px #0007;touch-action:manipulation}
-.square{border:0;border-radius:0;padding:0;position:relative;display:grid;place-items:center;aspect-ratio:1;font-size:clamp(28px,8.3vw,55px);line-height:1}
-.square.light{background:#e8d8b8}.square.dark{background:#78906f}.square.selected{box-shadow:inset 0 0 0 4px #ffd36f}.square.target:after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#175c3c99}.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #175c3c99;border-radius:50%}
-.piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}.piece.white.pawn{transform:none;font-size:1.28em}
-body[data-theme="wood"] .square.light{background:#e8c99a}body[data-theme="wood"] .square.dark{background:#875a36}
-body[data-theme="midnight"] .square.light{background:#9ba9bb}body[data-theme="midnight"] .square.dark{background:#45556d}
-
-.hint{color:#f5d28e;min-height:22px;font-size:14px;line-height:1.45;margin-top:9px}.moves{max-height:130px;overflow:auto;font-size:13px;line-height:1.9;color:#dce5f0}.moves b{color:var(--gold);margin-right:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}
-</style></head><body><main>
-<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v2.3</div></header>
-<section class="panel"><div class="controls">
-<div class="field"><label for="level">COMPUTER LEVEL</label><select id="level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select></div>
-<div class="field"><label for="color">PLAY AS</label><select id="color"><option value="w">White</option><option value="b">Black</option></select></div>
-<div class="field"><label for="mode">GAME MODE</label><select id="mode"><option value="computer">Vs Computer</option><option value="local">Two Players</option></select></div>
-<div class="field"><label for="theme">BOARD STYLE</label><select id="theme"><option value="classic">Classic</option><option value="wood">Walnut</option><option value="midnight">Midnight</option></select></div>
-</div></section>
-<section class="panel"><div class="status" id="status">Your move — White</div><div class="note" id="substatus">Tap a piece, then tap a highlighted square.</div>
-<div id="board" class="board" aria-label="Chess board"></div><div class="hint" id="hint" aria-live="polite"></div>
-<div class="row" style="margin-top:12px"><button class="primary" id="hintBtn">💡 Get a hint</button><button id="undoBtn">↶ Undo</button><button id="newBtn">＋ New game</button></div>
-<div class="row" style="margin-top:8px"><button id="saveBtn">Save game</button><button id="resumeBtn">Resume saved</button><button id="threatBtn">Show threats</button></div>
-<div id="threats" class="hint"></div></section>
-<section class="panel"><b>Move history</b><div class="moves" id="moves">No moves yet.</div><div class="note" id="opening"></div></section>
-<section class="panel"><b>Game review</b><div id="review" class="note">Finish a game to see its result and review.</div><div class="row" style="margin-top:8px"><button id="analyzeBtn">Analyze current position</button></div></section>
-<section class="panel"><b>Your stats</b><div id="stats" class="note">Games: 0 · Wins: 0 · Draws: 0 · Losses: 0</div></section>
-<p class="note">Choose a difficulty, play as White or Black, and request a hint whenever you need one. Expert searches deeper and may take longer on older phones. The first load requires an internet connection for the chess rules library.</p>
+:root{color-scheme:dark;--bg:#090e18;--panel:#141e2e;--panel2:#1b293c;--line:#2b3b52;--gold:#e8bd70;--muted:#9eacc0;--text:#f5f7fb}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 13px env(safe-area-inset-bottom);background:radial-gradient(ellipse at 50% -10%,#263d57 0,#111c2b 42%,#090e18 78%);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+main{max-width:620px;margin:auto;padding:12px 0 24px}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 17px}.brand{font-size:22px;font-weight:850;letter-spacing:-.8px}.brand span{color:var(--gold)}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-weight:750}.top-actions{display:flex;gap:8px}.icon-btn{width:42px;height:42px;padding:0;display:grid;place-items:center;border:1px solid #34465e;background:#17253a;border-radius:14px;color:#f4f6fa;font-size:19px}
+.panel{background:linear-gradient(150deg,#19283b,#121c2b);border:1px solid #293a50;border-radius:20px;padding:14px;margin:12px 0;box-shadow:0 12px 32px #0003}.game-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.status{font-weight:800;font-size:16px}.substatus{font-size:12px;color:var(--muted);margin-top:2px}.turn-pill{font-size:10px;letter-spacing:.08em;text-transform:uppercase;border:1px solid #3a4b62;border-radius:99px;padding:6px 9px;color:#e8c47f;white-space:nowrap}
+.board-wrap{padding:7px;background:linear-gradient(145deg,#34465c,#182537);border:1px solid #43536a;border-radius:15px;box-shadow:0 15px 34px #0005}.board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border-radius:9px;overflow:hidden;touch-action:manipulation}
+.square{border:0;border-radius:0;padding:0;position:relative;display:grid;place-items:center;aspect-ratio:1;font-size:clamp(30px,9vw,57px);line-height:1;background:transparent}.square.light{background:#e9dfc9}.square.dark{background:#77917f}.square.selected{box-shadow:inset 0 0 0 4px #f4c86f}.square.target:after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#164c3599}.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #164c3599;border-radius:50%}
+.piece{display:grid;place-items:center;filter:drop-shadow(0 2px 1px #0003)}.piece.white{color:#fff}.piece.black{color:#202a37}.piece.white.pawn,.piece.black.pawn{font-size:1.08em}
+body[data-theme="wood"] .square.light{background:#e9c99b}body[data-theme="wood"] .square.dark{background:#875a36}body[data-theme="midnight"] .square.light{background:#a9b7c9}body[data-theme="midnight"] .square.dark{background:#465a75}
+.hint{color:#f4d18e;min-height:18px;font-size:13px;line-height:1.45;margin:10px 2px 0}.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px}.action{min-height:61px;border:1px solid #33465e;background:#1b2b40;border-radius:15px;padding:8px 4px;color:#edf2f8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:18px}.action span{font-size:10px;font-weight:700;color:#bdc8d7}.action.primary{background:linear-gradient(145deg,#f0ce8b,#d8a956);border-color:#edc477;color:#1a2431}.action.primary span{color:#263143}
+button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{opacity:.38;cursor:default}
+.bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:15px 0}.nav-btn{background:transparent;border:1px solid transparent;border-radius:13px;color:#93a2b7;padding:9px 3px;font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px}.nav-btn b{font-size:18px;font-weight:500}.nav-btn.active{background:#1a293d;border-color:#30445e;color:#f1cb85}
+.section-panel{display:none}.section-panel.active{display:block}.section-title{font-size:15px;font-weight:800;margin-bottom:10px}.moves{max-height:230px;overflow:auto;font-size:13px;line-height:2;color:#dce5f0}.moves b{color:var(--gold);margin-right:8px}.note{font-size:12px;color:var(--muted);line-height:1.55}.inline-action{background:#24364c;border:1px solid #3b506a;border-radius:11px;padding:9px 12px;font-size:12px;font-weight:700}
+.overlay{position:fixed;inset:0;z-index:20;background:#050a12b8;backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}.overlay.open{display:flex}.sheet{width:min(100%,560px);max-height:88vh;overflow:auto;background:linear-gradient(155deg,#1d2d42,#101a29);border:1px solid #3a4b62;border-radius:24px;padding:18px;box-shadow:0 20px 60px #0009;animation:rise .2s ease-out}@keyframes rise{from{transform:translateY(18px);opacity:.5}to{transform:none;opacity:1}}.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.sheet-title{font-size:18px;font-weight:850}.close-btn{border:0;background:#2b3c52;border-radius:11px;width:36px;height:36px;font-size:19px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:10px;letter-spacing:.1em;color:var(--muted);margin:0 0 6px 3px;font-weight:800}.field select{width:100%;border:1px solid #3b506a;background:#24364c;border-radius:12px;padding:12px;font-size:14px}.setting-row{border-top:1px solid #304158;margin-top:15px;padding-top:14px}.menu-list{display:grid;gap:8px}.menu-item{display:flex;align-items:center;gap:12px;text-align:left;background:#1b2b40;border:1px solid #33465e;border-radius:14px;padding:13px;font-weight:700}.menu-item i{font-style:normal;font-size:19px;width:26px;text-align:center;color:var(--gold)}.menu-item small{display:block;color:var(--muted);font-weight:400;font-size:11px;margin-top:2px}
+@media(min-width:560px){main{padding-top:22px}.board-wrap{padding:9px}.square{font-size:clamp(38px,6.8vw,59px)}}
+@media(max-width:370px){body{padding-left:8px;padding-right:8px}.panel{padding:10px}.action-grid{gap:5px}.action{min-height:56px}}
+</style></head><body>
+<main>
+<header class="top">
+ <div><div class="eyebrow">Your personal chess studio</div><div class="brand">♞ Chess <span>Companion</span></div></div>
+ <div class="top-actions"><button class="icon-btn" id="menuBtn" aria-label="Open menu">☰</button><button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙</button></div>
+</header>
+<section class="panel">
+ <div class="game-head"><div><div class="status" id="status">Your move — White</div><div class="substatus" id="substatus">Tap a piece, then tap a highlighted square.</div></div><div class="turn-pill" id="turnPill">WHITE TO MOVE</div></div>
+ <div class="board-wrap"><div id="board" class="board" aria-label="Chess board"></div></div>
+ <div class="hint" id="hint" aria-live="polite"></div><div id="threats" class="hint"></div>
+ <div class="action-grid">
+  <button class="action primary" id="hintBtn">✦<span>Hint</span></button>
+  <button class="action" id="undoBtn">↶<span>Undo</span></button>
+  <button class="action" id="threatBtn">⌖<span>Threats</span></button>
+  <button class="action" id="newBtn">＋<span>New game</span></button>
+ </div>
+</section>
+<nav class="bottom-nav" aria-label="Game sections">
+ <button class="nav-btn active" data-tab="play"><b>♟</b>Play</button>
+ <button class="nav-btn" data-tab="history"><b>☷</b>Moves</button>
+ <button class="nav-btn" data-tab="reviewTab"><b>⌕</b>Analysis</button>
+ <button class="nav-btn" data-tab="statsTab"><b>▥</b>Stats</button>
+</nav>
+<section class="panel section-panel" id="history"><div class="section-title">Move history</div><div class="moves" id="moves">No moves yet.</div><div class="note" id="opening"></div></section>
+<section class="panel section-panel" id="reviewTab"><div class="section-title">Game analysis</div><div id="review" class="note">Finish a game to see its result and review.</div><button class="inline-action" id="analyzeBtn" style="margin-top:12px">Analyze current position</button></section>
+<section class="panel section-panel" id="statsTab"><div class="section-title">Your statistics</div><div id="stats" class="note">Games: 0 · Wins: 0 · Draws: 0 · Losses: 0</div></section>
+<p class="note" style="text-align:center;margin:18px 12px">Chess Companion <span style="color:var(--gold)">v3.0</span> · Think ahead. Enjoy the game.</p>
 </main>
+<div class="overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
+ <div class="sheet"><div class="sheet-head"><div><div class="eyebrow">Personalize your game</div><div class="sheet-title">Settings</div></div><button class="close-btn" id="settingsClose" aria-label="Close settings">×</button></div>
+ <div class="controls">
+  <div class="field"><label for="level">COMPUTER LEVEL</label><select id="level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select></div>
+  <div class="field"><label for="color">PLAY AS</label><select id="color"><option value="w">White</option><option value="b">Black</option></select></div>
+  <div class="field"><label for="mode">GAME MODE</label><select id="mode"><option value="computer">Vs Computer</option><option value="local">Two Players</option></select></div>
+  <div class="field"><label for="theme">BOARD STYLE</label><select id="theme"><option value="classic">Classic</option><option value="wood">Walnut</option><option value="midnight">Midnight</option></select></div>
+ </div>
+ <div class="setting-row note">Changes to game mode or playing color start a new game. Board style is saved on this device.</div>
+ </div>
+</div>
+<div class="overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-label="Game menu">
+ <div class="sheet"><div class="sheet-head"><div><div class="eyebrow">Chess Companion</div><div class="sheet-title">Game menu</div></div><button class="close-btn" id="menuClose" aria-label="Close menu">×</button></div>
+ <div class="menu-list">
+  <button class="menu-item" id="menuNew"><i>＋</i><span>New game<small>Start a fresh match</small></span></button>
+  <button class="menu-item" id="menuSave"><i>▣</i><span>Save game<small>Keep your current position on this device</small></span></button>
+  <button class="menu-item" id="menuResume"><i>↻</i><span>Resume saved game<small>Continue where you left off</small></span></button>
+  <button class="menu-item" id="menuSettings"><i>⚙</i><span>Settings<small>Difficulty, side, mode and board style</small></span></button>
+ </div></div>
+</div>
 <script type="module">
 import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
 (()=>{
@@ -56,7 +86,7 @@ function render(){
  $("undoBtn").disabled=!history.length||busy;
  const over=game.isGameOver();$("status").textContent=over?resultText():busy?"Computer is thinking…":$("mode").value==="local"?(game.turn()==="w"?"White":"Black")+" to move":myTurn()?"Your move — "+(game.turn()==="w"?"White":"Black"):"Computer to move";
  $("opening").textContent="Opening: "+openingName();if(over&&!reviewed)finishGame();
- $("substatus").textContent=game.isCheck()?"Check!":busy?"Hang tight…":"Tap a piece, then tap a highlighted square.";
+ $("substatus").textContent=game.isCheck()?"Check!":busy?"Hang tight…":"Tap a piece, then tap a highlighted square.";$("turnPill").textContent=over?"GAME OVER":busy?"THINKING":(game.turn()==="w"?"WHITE":"BLACK")+" TO MOVE";
 }
 function resultText(){if(game.isCheckmate())return "Checkmate — "+(game.turn()==="w"?"Black":"White")+" wins.";if(game.isStalemate())return "Draw — stalemate.";if(game.isThreefoldRepetition())return "Draw — threefold repetition.";if(game.isInsufficientMaterial())return "Draw — insufficient material.";return "Draw — game over."}
 function tap(sq){if(busy||game.isGameOver()||!myTurn())return;const p=game.get(sq);
@@ -76,7 +106,20 @@ $("undoBtn").onclick=()=>{if(busy||!history.length)return;game.undo();history.po
 function openingName(){const p=history.slice(0,6).map(m=>m.san).join(" ");const names=[["e4 e5 Nf3 Nc6 Bc4","Italian Game"],["e4 e5 Nf3 Nc6 Bb5","Ruy Lopez"],["d4 d5 c4","Queen's Gambit"],["e4 c5","Sicilian Defense"],["e4 e6","French Defense"],["e4 c6","Caro-Kann Defense"],["d4 Nf6 c4 g6","King's Indian Defense"],["Nf3 d5 g3","Réti Opening"]];const hit=names.find(([seq])=>p.startsWith(seq));return hit?hit[1]:history.length<2?"Starting position":"Unclassified opening";}
 function stats(){try{return JSON.parse(localStorage.getItem("ccStats")||'{"games":0,"wins":0,"draws":0,"losses":0}') }catch(e){return {games:0,wins:0,draws:0,losses:0}}}
 function showStats(){const s=stats();$("stats").textContent="Games: "+s.games+" · Wins: "+s.wins+" · Draws: "+s.draws+" · Losses: "+s.losses;}
-function finishGame(){reviewed=true;const won=game.isCheckmate()?(game.turn()!==$("color").value):false,draw=!game.isCheckmate();if($("mode").value==="computer"){const s=stats();s.games++;if(draw)s.draws++;else if(won)s.wins++;else s.losses++;localStorage.setItem("ccStats",JSON.stringify(s));showStats();}$("review").textContent=resultText()+" Played "+history.length+" half-moves. Opening: "+openingName()+". Use Analyze current position to inspect material balance.";}
+function finishGame(){reviewed=true;const won=game.isCheckmate()?(game.turn()!==$("color").value):false,draw=!game.isCheckmate();if($("mode").value==="computer"){const s=stats();s.games++;if(draw)s.draws++;else if(won)s.wins++;else s.losses++;localStorage.setItem("ccStats",JSON.stringify(s));
+function openOverlay(id){$(id).classList.add("open")}
+function closeOverlay(id){$(id).classList.remove("open")}
+$("settingsBtn").onclick=()=>openOverlay("settingsOverlay");
+$("menuBtn").onclick=()=>openOverlay("menuOverlay");
+$("settingsClose").onclick=()=>closeOverlay("settingsOverlay");
+$("menuClose").onclick=()=>closeOverlay("menuOverlay");
+$("menuSettings").onclick=()=>{closeOverlay("menuOverlay");openOverlay("settingsOverlay")};
+$("menuNew").onclick=()=>{closeOverlay("menuOverlay");newGame()};
+$("menuSave").onclick=()=>{closeOverlay("menuOverlay");saveGame()};
+$("menuResume").onclick=()=>{closeOverlay("menuOverlay");resumeGame()};
+["settingsOverlay","menuOverlay"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target===$(id))closeOverlay(id)}));
+document.querySelectorAll(".nav-btn").forEach(btn=>btn.onclick=()=>{document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x===btn));document.querySelectorAll(".section-panel").forEach(x=>x.classList.remove("active"));const target=btn.dataset.tab;if(target!=="play")$(target).classList.add("active")});
+showStats();}$("review").textContent=resultText()+" Played "+history.length+" half-moves. Opening: "+openingName()+". Use Analyze current position to inspect material balance.";}
 function saveGame(){try{localStorage.setItem("ccSaved",JSON.stringify({pgn:game.pgn(),mode:$("mode").value,color:$("color").value,level:$("level").value}));$("hint").textContent="Game saved on this device."}catch(e){$("hint").textContent="Could not save this game on this device."}}
 function resumeGame(){try{const d=JSON.parse(localStorage.getItem("ccSaved")||"null");if(!d){$("hint").textContent="No saved game found.";return}game=new Chess();if(d.pgn)game.loadPgn(d.pgn);history=game.history({verbose:true});$("mode").value=d.mode||"computer";$("color").value=d.color||"w";$("level").value=d.level||"medium";selected=null;legal=[];reviewed=false;$("hint").textContent="Saved game restored.";render();if(!game.isGameOver()&&$("mode").value==="computer"&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="Saved game could not be restored: "+e.message}}
 function showThreats(){const side=game.turn(),enemy=side==="w"?"b":"w",pieces=[];for(const rank of "12345678")for(const file of "abcdefgh"){const sq=file+rank,p=game.get(sq);if(p&&p.color===enemy&&p.type!=="k"&&game.isAttacked(sq,side))pieces.push(sq+" ("+p.type.toUpperCase()+")")}$("threats").textContent=pieces.length?"Your "+(side==="w"?"White":"Black")+" pieces are attacking: "+pieces.join(", "):"No direct attacks on opposing pieces are visible."}
@@ -86,6 +129,6 @@ $("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStora
 try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
 showStats();
 render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=13",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=14",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

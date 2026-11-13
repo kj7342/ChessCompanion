@@ -14,13 +14,13 @@ select,button{font:inherit;border-radius:12px;border:1px solid #3b4d65;backgroun
 .board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border:4px solid #26364b;border-radius:10px;overflow:hidden;box-shadow:0 12px 35px #0007;touch-action:manipulation}
 .square{border:0;border-radius:0;padding:0;position:relative;display:grid;place-items:center;aspect-ratio:1;font-size:clamp(28px,8.3vw,55px);line-height:1}
 .square.light{background:#e8d8b8}.square.dark{background:#78906f}.square.selected{box-shadow:inset 0 0 0 4px #ffd36f}.square.target:after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#175c3c99}.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #175c3c99;border-radius:50%}
-.piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}.piece.white.pawn{transform:none;font-size:1em}
+.piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}.piece.white.pawn{transform:none;font-size:1.28em}
 body[data-theme="wood"] .square.light{background:#e8c99a}body[data-theme="wood"] .square.dark{background:#875a36}
 body[data-theme="midnight"] .square.light{background:#9ba9bb}body[data-theme="midnight"] .square.dark{background:#45556d}
 
 .hint{color:#f5d28e;min-height:22px;font-size:14px;line-height:1.45;margin-top:9px}.moves{max-height:130px;overflow:auto;font-size:13px;line-height:1.9;color:#dce5f0}.moves b{color:var(--gold);margin-right:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}
 </style></head><body><main>
-<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v2.1</div></header>
+<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v2.2</div></header>
 <section class="panel"><div class="controls">
 <div class="field"><label for="level">COMPUTER LEVEL</label><select id="level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select></div>
 <div class="field"><label for="color">PLAY AS</label><select id="color"><option value="w">White</option><option value="b">Black</option></select></div>
@@ -40,7 +40,7 @@ body[data-theme="midnight"] .square.light{background:#9ba9bb}body[data-theme="mi
 <script type="module">
 import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
 (()=>{
-const $=id=>document.getElementById(id),glyph={wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♟",bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟"},files="abcdefgh";
+const $=id=>document.getElementById(id),glyph={wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟"},files="abcdefgh";
 const levels={easy:{depth:1,random:.42,ms:250},medium:{depth:2,random:.12,ms:450},hard:{depth:4,random:.025,ms:850},expert:{depth:6,random:0,ms:1200}},value={p:100,n:315,b:330,r:500,q:900,k:20000};
 let game=new Chess(),selected=null,legal=[],history=[],busy=false,searchNodes=0,searchDeadline=0,reviewed=false;
 function myTurn(){return $("mode").value==="local"||game.turn()===$("color").value}
@@ -86,6 +86,6 @@ $("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStora
 try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
 showStats();
 render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=11",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=12",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

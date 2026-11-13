@@ -17,12 +17,12 @@ select,button{font:inherit;border-radius:12px;border:1px solid #3b4d65;backgroun
 .piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}
 .hint{color:#f5d28e;min-height:22px;font-size:14px;line-height:1.45;margin-top:9px}.moves{max-height:130px;overflow:auto;font-size:13px;line-height:1.9;color:#dce5f0}.moves b{color:var(--gold);margin-right:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}
 </style></head><body><main>
-<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v1.4</div></header>
+<header class="top"><div><div class="brand">♞ Chess <span>Companion</span></div><div class="muted">Your board. Your pace. Your next move.</div></div><div class="muted">v1.5</div></header>
 <section class="panel"><div class="controls">
 <div class="field"><label for="level">COMPUTER LEVEL</label><select id="level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option></select></div>
 <div class="field"><label for="color">PLAY AS</label><select id="color"><option value="w">White</option><option value="b">Black</option></select></div>
 </div></section>
-<section class="panel"><div class="status" id="status">Your move — White<small id="substatus">Tap a piece, then tap a highlighted square.</small></div>
+<section class="panel"><div class="status" id="status">Your move — White</div><div class="note" id="substatus">Tap a piece, then tap a highlighted square.</div>
 <div id="board" class="board" aria-label="Chess board"></div><div class="hint" id="hint" aria-live="polite"></div>
 <div class="row" style="margin-top:12px"><button class="primary" id="hintBtn">💡 Get a hint</button><button id="undoBtn">↶ Undo</button><button id="newBtn">＋ New game</button></div></section>
 <section class="panel"><b>Move history</b><div class="moves" id="moves">No moves yet.</div></section>
@@ -45,8 +45,8 @@ function render(){
  }
  $("moves").innerHTML=history.length?history.map((m,i)=>(i%2===0?"<b>"+(Math.floor(i/2)+1)+".</b>":"")+m.san+(i%2?"<br>":" ")).join(""):"No moves yet.";
  $("undoBtn").disabled=!history.length||busy;
- const over=game.isGameOver();$("status").innerHTML=over?resultText():busy?"Computer is thinking…":myTurn()?"Your move — "+(game.turn()==="w"?"White":"Black"):"Computer to move<small>Hang tight…</small>";
- $("substatus").textContent=game.isCheck()?"Check!":"Tap a piece, then tap a highlighted square.";
+ const over=game.isGameOver();$("status").textContent=over?resultText():busy?"Computer is thinking…":myTurn()?"Your move — "+(game.turn()==="w"?"White":"Black"):"Computer to move";
+ $("substatus").textContent=game.isCheck()?"Check!":busy?"Hang tight…":"Tap a piece, then tap a highlighted square.";
 }
 function resultText(){if(game.isCheckmate())return "Checkmate — "+(game.turn()==="w"?"Black":"White")+" wins.";if(game.isStalemate())return "Draw — stalemate.";if(game.isThreefoldRepetition())return "Draw — threefold repetition.";if(game.isInsufficientMaterial())return "Draw — insufficient material.";return "Draw — game over."}
 function tap(sq){if(busy||game.isGameOver()||!myTurn())return;const p=game.get(sq);

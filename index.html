@@ -45,7 +45,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{o
 <section class="panel section-panel" id="history"><div class="section-title">Move history</div><div class="moves" id="moves">No moves yet.</div><div class="note" id="opening"></div></section>
 <section class="panel section-panel" id="reviewTab"><div class="section-title">Game analysis</div><div id="review" class="note">Finish a game to see its result and review.</div><button class="inline-action" id="analyzeBtn" style="margin-top:12px">Analyze current position</button></section>
 <section class="panel section-panel" id="statsTab"><div class="section-title">Your statistics</div><div id="stats" class="note">Games: 0 · Wins: 0 · Draws: 0 · Losses: 0</div></section>
-<p class="note" style="text-align:center;margin:18px 12px">Chess Companion <span style="color:var(--gold)">v3.7</span> · Think ahead. Enjoy the game.</p>
+<p class="note" style="text-align:center;margin:18px 12px">Chess Companion <span style="color:var(--gold)">v3.8</span> · Think ahead. Enjoy the game.</p>
 </main>
 <div class="overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
  <div class="sheet"><div class="sheet-head"><div><div class="eyebrow">Personalize your game</div><div class="sheet-title">Settings</div></div><button class="close-btn" id="settingsClose" aria-label="Close settings">×</button></div>
@@ -59,13 +59,13 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{o
  <div class="feature-options">
   <label><input type="checkbox" id="optCaptured"> Captured pieces display</label>
   <label><input type="checkbox" id="optHighlight"> Highlight the last move</label>
-  <label><input type="checkbox" id="optClock"> Chess clock</label>
+  <label><input type="checkbox" id="optClock"> Use chess clock (optional)</label>
   <label><input type="checkbox" id="optAnalysis"> Move quality analysis</label>
   <label><input type="checkbox" id="optSound"> Sound effects</label>
   <label><input type="checkbox" id="optMotion"> Piece and interface animations</label>
   <label><input type="checkbox" id="optVisual"> Enhanced piece styling</label>
  </div>
- <div class="field" style="margin-top:12px"><label for="clockLength">CLOCK LENGTH</label><select id="clockLength"><option value="180">3 minutes</option><option value="300" selected>5 minutes</option><option value="600">10 minutes</option></select></div>
+ <div class="field" id="clockLengthField" style="margin-top:12px;display:none"><label for="clockLength">CLOCK LENGTH</label><select id="clockLength"><option value="180">3 minutes</option><option value="300" selected>5 minutes</option><option value="600">10 minutes</option></select></div>
  </div>
  <div class="setting-row note">All optional features start off. Your choices are saved on this device. Changes to game mode or playing color start a new game.</div>
  </div>
@@ -89,7 +89,7 @@ const defaults={captured:false,highlight:false,clock:false,analysis:false,sound:
 let options={...defaults},clockSeconds={w:300,b:300},clockTimer=null,lastClockAt=0,moveEvalBefore=null;
 function myTurn(){return $("mode").value==="local"||game.turn()===$("color").value}
 function loadOptions(){try{options={...defaults,...JSON.parse(localStorage.getItem("ccOptions")||"{}")}}catch(e){options={...defaults}}Object.keys(defaults).forEach(k=>{const el=$("opt"+k[0].toUpperCase()+k.slice(1));if(el)el.checked=!!options[k]});applyOptions()}
-function applyOptions(){document.body.classList.toggle("no-motion",!options.motion);document.body.classList.toggle("enhanced-pieces",!!options.visual);$("captureRow").hidden=!options.captured;$("clockRow").classList.toggle("visible",!!options.clock);if(options.clock)drawClock()}
+function applyOptions(){document.body.classList.toggle("no-motion",!options.motion);document.body.classList.toggle("enhanced-pieces",!!options.visual);$("captureRow").hidden=!options.captured;$("clockRow").classList.toggle("visible",!!options.clock);$("clockLengthField").style.display=options.clock?"block":"none";if(options.clock)drawClock()}
 function saveOptions(){Object.keys(defaults).forEach(k=>{const el=$("opt"+k[0].toUpperCase()+k.slice(1));options[k]=!!el.checked});try{localStorage.setItem("ccOptions",JSON.stringify(options))}catch(e){}applyOptions();if(options.clock)startClock();else stopClock()}
 function fmtTime(n){n=Math.max(0,n);return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0")}
 function drawClock(){$("whiteClock").textContent=fmtTime(clockSeconds.w);$("blackClock").textContent=fmtTime(clockSeconds.b);$("whiteClock").classList.toggle("active",options.clock&&!game.isGameOver()&&game.turn()==="w");$("blackClock").classList.toggle("active",options.clock&&!game.isGameOver()&&game.turn()==="b")}
@@ -133,7 +133,7 @@ $("undoBtn").onclick=()=>{if(busy||!history.length)return;game.undo();history.po
 function openingName(){const p=history.slice(0,6).map(m=>m.san).join(" ");const names=[["e4 e5 Nf3 Nc6 Bc4","Italian Game"],["e4 e5 Nf3 Nc6 Bb5","Ruy Lopez"],["d4 d5 c4","Queen's Gambit"],["e4 c5","Sicilian Defense"],["e4 e6","French Defense"],["e4 c6","Caro-Kann Defense"],["d4 Nf6 c4 g6","King's Indian Defense"],["Nf3 d5 g3","Réti Opening"]];const hit=names.find(([seq])=>p.startsWith(seq));return hit?hit[1]:history.length<2?"Starting position":"Unclassified opening";}
 function stats(){try{return JSON.parse(localStorage.getItem("ccStats")||'{"games":0,"wins":0,"draws":0,"losses":0}') }catch(e){return {games:0,wins:0,draws:0,losses:0}}}
 function showStats(){const s=stats();$("stats").textContent="Games: "+s.games+" · Wins: "+s.wins+" · Draws: "+s.draws+" · Losses: "+s.losses;}
-function finishGame(){reviewed=true;const won=game.isCheckmate()?(game.turn()!==$("color").value):false,draw=!game.isCheckmate();if($("mode").value==="computer"){const s=stats();s.games++;if(draw)s.draws++;else if(won)s.wins++;else s.losses++;localStorage.setItem("ccStats",JSON.stringify(s));showStats()}$("review").textContent=resultText()+" Played "+history.length+" half-moves. Opening: "+openingName()+". Use Analyze current position to inspect material balance."}
+function finishGame(){stopClock();reviewed=true;const won=game.isCheckmate()?(game.turn()!==$("color").value):false,draw=!game.isCheckmate();if($("mode").value==="computer"){const s=stats();s.games++;if(draw)s.draws++;else if(won)s.wins++;else s.losses++;localStorage.setItem("ccStats",JSON.stringify(s));showStats()}$("review").textContent=resultText()+" Played "+history.length+" half-moves. Opening: "+openingName()+". Use Analyze current position to inspect material balance."}
 function openOverlay(id){$(id).classList.add("open")}
 function closeOverlay(id){$(id).classList.remove("open")}
 $("settingsBtn").onclick=()=>openOverlay("settingsOverlay");
@@ -159,6 +159,6 @@ try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch
 showStats();
 loadOptions();
 newGame();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=21",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=22",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

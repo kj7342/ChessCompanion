@@ -45,7 +45,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{o
 <section class="panel section-panel" id="history"><div class="section-title">Move history</div><div class="moves" id="moves">No moves yet.</div><div class="note" id="opening"></div></section>
 <section class="panel section-panel" id="reviewTab"><div class="section-title">Game analysis</div><div id="review" class="note">Finish a game to see its result and review.</div><button class="inline-action" id="analyzeBtn" style="margin-top:12px">Analyze current position</button></section>
 <section class="panel section-panel" id="statsTab"><div class="section-title">Your statistics</div><div id="stats" class="note">Games: 0 · Wins: 0 · Draws: 0 · Losses: 0</div></section>
-<p class="note" style="text-align:center;margin:18px 12px">Chess Companion <span style="color:var(--gold)">v3.2</span> · Think ahead. Enjoy the game.</p>
+<p class="note" style="text-align:center;margin:18px 12px">Chess Companion <span style="color:var(--gold)">v3.3</span> · Think ahead. Enjoy the game.</p>
 </main>
 <div class="overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
  <div class="sheet"><div class="sheet-head"><div><div class="eyebrow">Personalize your game</div><div class="sheet-title">Settings</div></div><button class="close-btn" id="settingsClose" aria-label="Close settings">×</button></div>
@@ -63,7 +63,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{o
  <div class="menu-list">
   <button class="menu-item" id="menuNew"><i>＋</i><span>New game<small>Start a fresh match</small></span></button>
   <button class="menu-item" id="menuSave"><i>▣</i><span>Save game<small>Keep your current position on this device</small></span></button>
-  <button class="menu-item" id="menuResume"><i>↻</i><span>Resume saved game<small>Continue where you left off</small></span></button>
+  <button class="menu-item" id="menuResume"><i>↻</i><span>Load saved game<small>Open a game saved on this device</small></span></button>
   <button class="menu-item" id="menuSettings"><i>⚙</i><span>Settings<small>Difficulty, side, mode and board style</small></span></button>
  </div></div>
 </div>
@@ -123,11 +123,11 @@ function saveGame(){try{localStorage.setItem("ccSaved",JSON.stringify({pgn:game.
 function resumeGame(){try{const d=JSON.parse(localStorage.getItem("ccSaved")||"null");if(!d){$("hint").textContent="No saved game found.";return}game=new Chess();if(d.pgn)game.loadPgn(d.pgn);history=game.history({verbose:true});$("mode").value=d.mode||"computer";$("color").value=d.color||"w";$("level").value=d.level||"medium";selected=null;legal=[];reviewed=false;$("hint").textContent="Saved game restored.";render();if(!game.isGameOver()&&$("mode").value==="computer"&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="Saved game could not be restored: "+e.message}}
 function showThreats(){const side=game.turn(),enemy=side==="w"?"b":"w",pieces=[];for(const rank of "12345678")for(const file of "abcdefgh"){const sq=file+rank,p=game.get(sq);if(p&&p.color===enemy&&p.type!=="k"&&game.isAttacked(sq,side))pieces.push(sq+" ("+p.type.toUpperCase()+")")}$("threats").textContent=pieces.length?"Your "+(side==="w"?"White":"Black")+" pieces are attacking: "+pieces.join(", "):"No direct attacks on opposing pieces are visible."}
 function analyzePosition(){const b=game.board();let w=0,bl=0;for(const row of b)for(const p of row)if(p){(p.color==="w"?w+=value[p.type]:bl+=value[p.type])}const diff=w-bl;$("review").textContent="Material: White "+(w/100).toFixed(1)+" · Black "+(bl/100).toFixed(1)+". "+(diff===0?"Material is equal.":diff>0?"White is ahead by "+(diff/100).toFixed(1)+" points.":"Black is ahead by "+(-diff/100).toFixed(1)+" points.")+" This is a material snapshot, not a full engine evaluation."}
-$("saveBtn").onclick=saveGame;$("resumeBtn").onclick=resumeGame;$("threatBtn").onclick=showThreats;$("analyzeBtn").onclick=analyzePosition;
+$("threatBtn").onclick=showThreats;$("analyzeBtn").onclick=analyzePosition;
 $("theme").onchange=()=>{document.body.dataset.theme=$("theme").value;localStorage.setItem("ccTheme",$("theme").value)};
 try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch(e){}
 showStats();
-render();if($("mode").value==="computer"&&$("color").value==="b")setTimeout(computerMove,120);
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=16",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+newGame();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=17",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

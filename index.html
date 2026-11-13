@@ -6,7 +6,7 @@
 <style>
 :root{color-scheme:dark;--bg:#090e18;--panel:#141e2e;--panel2:#1b293c;--line:#2b3b52;--gold:#e8bd70;--muted:#9eacc0;--text:#f5f7fb}
 *{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 13px env(safe-area-inset-bottom);background:radial-gradient(ellipse at 50% -10%,#263d57 0,#111c2b 42%,#090e18 78%);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
-main{max-width:620px;margin:auto;padding:12px 0 24px}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 17px}.brand{font-size:22px;font-weight:850;letter-spacing:-.8px}.brand span{color:var(--gold)}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-weight:750}.top-actions{display:flex;gap:8px}.icon-btn{width:42px;height:42px;padding:0;display:grid;place-items:center;border:1px solid #34465e;background:#17253a;border-radius:14px;color:#f4f6fa;font-size:19px}
+main{max-width:620px;margin:auto;padding:12px 0 24px}.top{display:flex;align-items:center;justify-content:space-between;margin:3px 2px 17px}.brand{font-size:22px;font-weight:850;letter-spacing:-.8px}.brand span{color:var(--gold)}.version-tag{display:inline-block;vertical-align:middle;margin-left:5px;padding:3px 6px;border:1px solid #526078;border-radius:7px;background:#1b2b40;color:#c4d0df;font-size:10px;font-weight:750;letter-spacing:.02em}.eyebrow{font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-weight:750}.top-actions{display:flex;gap:8px}.icon-btn{width:42px;height:42px;padding:0;display:grid;place-items:center;border:1px solid #34465e;background:#17253a;border-radius:14px;color:#f4f6fa;font-size:19px}
 .panel{background:linear-gradient(150deg,#19283b,#121c2b);border:1px solid #293a50;border-radius:20px;padding:14px;margin:12px 0;box-shadow:0 12px 32px #0003}.game-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;min-height:48px}.game-head>div:first-child{min-width:0;flex:1}.status{font-weight:800;font-size:16px;line-height:22px;height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.substatus{font-size:12px;color:var(--muted);margin-top:2px;min-height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.turn-pill{font-size:10px;letter-spacing:.08em;text-transform:uppercase;border:1px solid #3a4b62;border-radius:99px;padding:6px 8px;color:#e8c47f;white-space:nowrap;width:112px;min-width:112px;text-align:center;flex-shrink:0}
 .board-wrap{padding:7px;background:linear-gradient(145deg,#34465c,#182537);border:1px solid #43536a;border-radius:15px;box-shadow:0 15px 34px #0005}.board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border-radius:9px;overflow:hidden;touch-action:manipulation}
 .square{border:0;border-radius:0;padding:0;position:relative;display:grid;place-items:center;aspect-ratio:1;font-size:clamp(30px,9vw,57px);line-height:1;background:transparent}.square.light{background:#e9dfc9}.square.dark{background:#77917f}.square.selected{box-shadow:inset 0 0 0 4px #f4c86f}.square.last-move{background-image:linear-gradient(#f3c96b55,#f3c96b55)}.square.in-check{box-shadow:inset 0 0 0 4px #e56b65}.square.target:after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#164c3599}.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #164c3599;border-radius:50%}
@@ -22,7 +22,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{o
 </style></head><body>
 <main>
 <header class="top">
- <div><div class="eyebrow">Your personal chess studio</div><div class="brand">♞ Chess <span>Companion</span></div></div>
+ <div><div class="eyebrow">Your personal chess studio</div><div class="brand">♞ Chess <span>Companion</span> <small class="version-tag">v4.2</small></div></div>
  <div class="top-actions"><button class="icon-btn" id="menuBtn" aria-label="Open menu">☰</button><button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙</button></div>
 </header>
 <section class="panel">
@@ -79,7 +79,14 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{o
   <button class="menu-item" id="menuSave"><i>▣</i><span>Save game<small>Keep your current position on this device</small></span></button>
   <button class="menu-item" id="menuResume"><i>↻</i><span>Load saved game<small>Open a game saved on this device</small></span></button>
   <button class="menu-item" id="menuSettings"><i>⚙</i><span>Settings<small>Difficulty, side, mode and board style</small></span></button>
+  <button class="menu-item" id="menuAbout"><i>ⓘ</i><span>About<small>Chess Companion · Version 4.2</small></span></button>
  </div></div>
+</div>
+<div class="overlay" id="aboutOverlay" role="dialog" aria-modal="true" aria-label="About Chess Companion">
+ <div class="sheet"><div class="sheet-head"><div><div class="eyebrow">About this app</div><div class="sheet-title">Chess Companion <span style="color:var(--gold)">v4.2</span></div></div><button class="close-btn" id="aboutClose" aria-label="Close about">×</button></div>
+  <p class="note">Your personal chess and checkers studio.</p>
+  <div class="setting-row note">Version 4.2<br>Play chess or checkers, practice against the computer, review games, and save your progress on this device.</div>
+ </div>
 </div>
 <script type="module">
 import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
@@ -164,12 +171,14 @@ $("menuBtn").onclick=()=>openOverlay("menuOverlay");
 $("settingsClose").onclick=()=>closeOverlay("settingsOverlay");
 $("menuClose").onclick=()=>closeOverlay("menuOverlay");
 $("menuSettings").onclick=()=>{closeOverlay("menuOverlay");openOverlay("settingsOverlay")};
+$("menuAbout").onclick=()=>{closeOverlay("menuOverlay");openOverlay("aboutOverlay")};
+$("aboutClose").onclick=()=>closeOverlay("aboutOverlay");
 $("menuChess").onclick=()=>{closeOverlay("menuOverlay");currentGame="chess";newGame();$("hint").textContent="Chess mode selected."};
 $("menuCheckers").onclick=()=>{closeOverlay("menuOverlay");currentGame="checkers";newGame();$("hint").textContent="Checkers mode selected."};
 $("menuNew").onclick=()=>{closeOverlay("menuOverlay");newGame()};
 $("menuSave").onclick=()=>{closeOverlay("menuOverlay");saveGame()};
 $("menuResume").onclick=()=>{closeOverlay("menuOverlay");resumeGame()};
-["settingsOverlay","menuOverlay"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target===$(id))closeOverlay(id)}));
+["settingsOverlay","menuOverlay","aboutOverlay"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target===$(id))closeOverlay(id)}));
 document.querySelectorAll(".nav-btn").forEach(btn=>btn.onclick=()=>{document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x===btn));document.querySelectorAll(".section-panel").forEach(x=>x.classList.remove("active"));const target=btn.dataset.tab;if(target!=="play")$(target).classList.add("active")});
 function saveGame(){try{localStorage.setItem("ccSaved",JSON.stringify(currentGame==="checkers"?{game:"checkers",checkers:checkers,checkersHistory:checkersHistory,checkersUndo:checkersUndo,mode:$("mode").value,color:$("color").value,level:$("level").value}:{game:"chess",pgn:game.pgn(),mode:$("mode").value,color:$("color").value,level:$("level").value}));$("hint").textContent="Game saved on this device."}catch(e){$("hint").textContent="Could not save this game on this device."}}
 function resumeGame(){try{const d=JSON.parse(localStorage.getItem("ccSaved")||"null");if(!d){$("hint").textContent="No saved game found.";return}currentGame=d.game==="checkers"?"checkers":"chess";if(currentGame==="checkers"){checkers=d.checkers||newCheckersState();checkersHistory=d.checkersHistory||[];checkersUndo=d.checkersUndo||[];}else{game=new Chess();if(d.pgn)game.loadPgn(d.pgn);history=game.history({verbose:true});}$("mode").value=d.mode||"computer";$("color").value=d.color||"w";$("level").value=d.level||"medium";selected=null;legal=[];reviewed=false;$("hint").textContent="Saved game restored.";render();if(!game.isGameOver()&&$("mode").value==="computer"&&!myTurn())setTimeout(computerMove,100)}catch(e){$("hint").textContent="Saved game could not be restored: "+e.message}}
@@ -184,6 +193,6 @@ try{document.body.dataset.theme=localStorage.getItem("ccTheme")||"classic"}catch
 showStats();
 loadOptions();
 newGame();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=24",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js?v=25",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 })();
 </script></body></html>

@@ -14,7 +14,7 @@ select,button{font:inherit;border-radius:12px;border:1px solid #3b4d65;backgroun
 .board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border:4px solid #26364b;border-radius:10px;overflow:hidden;box-shadow:0 12px 35px #0007;touch-action:manipulation}
 .square{border:0;border-radius:0;padding:0;position:relative;display:grid;place-items:center;aspect-ratio:1;font-size:clamp(28px,8.3vw,55px);line-height:1}
 .square.light{background:#e8d8b8}.square.dark{background:#78906f}.square.selected{box-shadow:inset 0 0 0 4px #ffd36f}.square.target:after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#175c3c99}.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #175c3c99;border-radius:50%}
-.piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}
+.piece.white{color:#fffdf4;text-shadow:0 1px 2px #161616,1px 1px 0 #222}.piece.black{color:#202630;text-shadow:0 1px 1px #fff9}.piece.white.pawn{transform:scale(1.24);transform-origin:center}
 body[data-theme="wood"] .square.light{background:#e8c99a}body[data-theme="wood"] .square.dark{background:#875a36}
 body[data-theme="midnight"] .square.light{background:#9ba9bb}body[data-theme="midnight"] .square.dark{background:#45556d}
 
@@ -49,7 +49,7 @@ function render(){
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
   const rr=flip?7-r:r,ff=flip?7-f:f,sq=files[ff]+(8-rr),p=game.get(sq),el=document.createElement("button");
   el.className="square "+((rr+ff)%2?"dark":"light")+(selected===sq?" selected":"");el.setAttribute("aria-label",sq+(p?" "+p.color+" "+p.type:""));
-  if(p){const span=document.createElement("span");span.className="piece "+(p.color==="w"?"white":"black");span.textContent=glyph[p.color+p.type];el.appendChild(span)}
+  if(p){const span=document.createElement("span");span.className="piece "+(p.color==="w"?"white":"black")+(p.type==="p"?" pawn":"");span.textContent=glyph[p.color+p.type];el.appendChild(span)}
   if(legal.some(m=>m.to===sq))el.classList.add(p?"capture":"target");el.onclick=()=>tap(sq);board.appendChild(el);
  }
  $("moves").innerHTML=history.length?history.map((m,i)=>(i%2===0?"<b>"+(Math.floor(i/2)+1)+".</b>":"")+m.san+(i%2?"<br>":" ")).join(""):"No moves yet.";
